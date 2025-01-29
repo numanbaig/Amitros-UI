@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { AuthFormSchema } from "@/schemas";
-import React from "react";
+import React, { useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import z from "zod";
@@ -22,8 +22,10 @@ import {
 import CommonAuthForm from "./common-form";
 import PasswordRequirements from "./password-requirements";
 import DashboardCustomButton from "@/components/custom-button/custom-button";
+import axiosClient from "@/config";
 const DashboardAuthForm = ({ type }: { type: string }) => {
   const formSchema = AuthFormSchema(type);
+  const [isPending, startTransition] = useTransition();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -36,8 +38,33 @@ const DashboardAuthForm = ({ type }: { type: string }) => {
     },
   });
 
-  const onSubmit = (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     console.log(data);
+    try {
+      const endpoint =
+        type === AuthType.REGISTER
+          ? "/auth/signup"
+          : type === AuthType.LOGIN
+          ? "/auth/login"
+          : console.log(data);
+
+      const response = await axiosClient.post(endpoint as string, data, {
+        withCredentials: true, // Make sure this is set to allow credentials (cookies, etc.)
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      console.log(response);
+      // if (typeof endpoint === "string") {
+      //   startTransition(async () => {
+      //     console.log(response);
+      //   });
+      // } else {
+      //   console.error("Invalid endpoint type:", endpoint);
+      // }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const formInputsData =
