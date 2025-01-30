@@ -5,7 +5,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import "../globals.css";
 import { Poppins } from "next/font/google";
 import { cn } from "@/lib/utils";
-
+import { Toaster } from "@/components/ui/toaster";
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["100", "300", "400", "700", "900"],
@@ -37,6 +37,7 @@ export default function AuthLayout({
               <DashboardHeader />
               <div className="flex-1 pt-[60px] pb-[20px] md:pt-[120px]  mx-auto w-full">
                 {children}
+                <Toaster />
               </div>
             </div>
           </SidebarProvider>

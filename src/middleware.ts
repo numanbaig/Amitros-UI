@@ -14,7 +14,8 @@ function isPublicFile(pathname: string) {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
+  const authCookie = request.cookies.get("auth_token");
+  console.log("cookie", authCookie);
   // Allow direct access to public files
   if (isPublicFile(pathname)) {
     return NextResponse.next();

@@ -8,10 +8,12 @@ const DashboardCustomButton = ({
   children,
   icon,
   className,
+  disabled,
 }: {
   children: React.ReactNode;
   icon?: string;
   className?: string;
+  disabled?: boolean;
 }) => {
   return (
     <Button
@@ -19,6 +21,7 @@ const DashboardCustomButton = ({
         "space-x-[10px] px-4 py-2 bg-primary-600 w-[247px] h-12 rounded-[8px] text-[16px] font-[700] text-white",
         className
       )}
+      disabled={disabled ? disabled : false}
     >
       {icon && (
         <div>

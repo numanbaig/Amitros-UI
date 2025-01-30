@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -23,9 +24,13 @@ import CommonAuthForm from "./common-form";
 import PasswordRequirements from "./password-requirements";
 import DashboardCustomButton from "@/components/custom-button/custom-button";
 import axiosClient from "@/config";
+import { useApiResponseMessages } from "@/hooks/use-alerts";
+import { useRouter } from "next/navigation";
 const DashboardAuthForm = ({ type }: { type: string }) => {
   const formSchema = AuthFormSchema(type);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
+  const { handleApiResponseMessages } = useApiResponseMessages();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -38,43 +43,73 @@ const DashboardAuthForm = ({ type }: { type: string }) => {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
-    console.log(data);
-    try {
-      const endpoint =
-        type === AuthType.REGISTER
-          ? "/auth/signup"
-          : type === AuthType.LOGIN
-          ? "/auth/login"
-          : console.log(data);
-
-      const response = await axiosClient.post(endpoint as string, data, {
-        withCredentials: true, // Make sure this is set to allow credentials (cookies, etc.)
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-      console.log(response);
-      // if (typeof endpoint === "string") {
-      //   startTransition(async () => {
-      //     console.log(response);
-      //   });
-      // } else {
-      //   console.error("Invalid endpoint type:", endpoint);
-      // }
-    } catch (error) {
-      console.log(error);
+  const getEndpoint = () => {
+    switch (type) {
+      case AuthType.REGISTER:
+        return { endpoint: "/auth/signup", redirectUrl: "/auth/login" };
+      case AuthType.LOGIN:
+        return { endpoint: "/auth/login", redirectUrl: "/" };
+      default:
+        return { endpoint: "", redirectUrl: "" };
     }
   };
 
-  const formInputsData =
-    type === AuthType.REGISTER
-      ? registerFormData
-      : type === AuthType.LOGIN
-      ? LoginFormData
-      : type === AuthType.RETURNINGUSERREGISTRATION
-      ? ReturningUserRegistrationFormData
-      : ForgotPasswordFormData;
+  const getFormInputsData = () => {
+    switch (type) {
+      case AuthType.REGISTER:
+        return registerFormData;
+      case AuthType.LOGIN:
+        return LoginFormData;
+      case AuthType.RETURNINGUSERREGISTRATION:
+        return ReturningUserRegistrationFormData;
+      case AuthType.FORGET_PASSWORD:
+        return ForgotPasswordFormData;
+      default:
+        return registerFormData;
+    }
+  };
+
+  const onSubmit = (data: z.infer<typeof formSchema>) => {
+    const { endpoint, redirectUrl } = getEndpoint();
+
+    startTransition(() => {
+      // Inside transition, handle the async operation
+      axiosClient
+        .post(endpoint, data, {
+          withCredentials: true,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        })
+        .then((response) => {
+          console.log("✅ Success:", response);
+          handleApiResponseMessages({
+            status: response?.status,
+            message: response?.data?.message || "Success",
+          });
+          if (redirectUrl && !endpoint.includes("/auth/login")) {
+            router.push(`${redirectUrl}`);
+          } else {
+            window.location.href = "/";
+          }
+        })
+        .catch((error) => {
+          if (error.response) {
+            console.error("🔴 Server Error:", error.response.data);
+            handleApiResponseMessages({
+              status: error?.response.data.statusCode,
+              message: error?.response?.data?.message || error?.error,
+            });
+          } else if (error.request) {
+            console.error("🔴 Network Error: No response received");
+          } else {
+            console.error("🔴 Unexpected Error:", error.message);
+          }
+        });
+    });
+  };
+
+  const formInputsData = getFormInputsData();
 
   return (
     <Form {...form}>
@@ -187,7 +222,10 @@ const DashboardAuthForm = ({ type }: { type: string }) => {
                 "w-full sm:w-[500px] mx-auto": type === AuthType.REGISTER,
               })}
             >
-              <DashboardCustomButton className="h-[40px] w-full  text-[16px] !font-bold">
+              <DashboardCustomButton
+                className="h-[40px] w-full  text-[16px] !font-bold"
+                disabled={isPending}
+              >
                 Submit
               </DashboardCustomButton>
             </div>

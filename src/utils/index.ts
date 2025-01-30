@@ -13,22 +13,23 @@ interface FormField {
 export const registerFormData: FormField[] = [
   {
     id: 1,
+    name: "registrationCode",
+    type: "text",
+    label: "Registration Code",
+  },
+  {
+    id: 2,
     name: "firstName",
     type: "text",
     label: "Full Name",
   },
   {
-    id: 2,
+    id: 3,
     name: "lastName",
     type: "text",
     label: "Last Name",
   },
-  {
-    id: 3,
-    name: "registrationCode",
-    type: "text",
-    label: "Registration Code",
-  },
+
   {
     id: 4,
     name: "email",
