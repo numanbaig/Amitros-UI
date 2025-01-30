@@ -1,7 +1,7 @@
 import axios from "axios";
-
+const BASE_URL = process.env.BASE_URL;
 const axiosClient = axios.create({
-  baseURL: "http://localhost:5000/api",
+  baseURL: `${BASE_URL}`,
   withCredentials: true,
 });
 
