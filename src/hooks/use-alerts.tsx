@@ -19,6 +19,7 @@ export const useApiResponseMessages = () => {
       case 404:
       case 500:
       case 400:
+      case 401:
         toast({
           variant: "destructive",
           title: "Error",

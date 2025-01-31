@@ -43,6 +43,9 @@ const DashboardAuthForm = ({ type }: { type: string }) => {
     },
   });
 
+  const url = process.env.NEXT_PUBLIC_BASE_URL;
+  console.log("urllllll" + url);
+
   const getEndpoint = () => {
     switch (type) {
       case AuthType.REGISTER:
@@ -84,7 +87,7 @@ const DashboardAuthForm = ({ type }: { type: string }) => {
         .then((response) => {
           console.log("✅ Success:", response);
           handleApiResponseMessages({
-            status: response?.status,
+            status: response.status,
             message: response?.data?.message || "Success",
           });
           if (redirectUrl && !endpoint.includes("/auth/login")) {
